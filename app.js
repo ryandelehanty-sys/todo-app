@@ -680,7 +680,7 @@ function showEntityDetail(entityIndex) {
                 <th style="padding: 0.75rem; text-align: center; color: #38bdf8; font-weight: 600; width: 100px;">Multi-Value</th>
               </tr>
             </thead>
-            <tbody${attrHtml}</tbody>
+            <tbody>${attrHtml}</tbody>
           </table>
         </div>
       ` : '<p style="color: #64748b;">No attributes defined for this entity.</p>'}
