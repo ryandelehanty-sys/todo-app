@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MDM Architecture Platform</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo">M</div>
+      <div>
+        <h1>MDM Architecture Platform</h1>
+        <p>Master Data Intelligence</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="search-bar">
+        <input type="search" id="globalSearch" placeholder="Search entities, attributes..." />
+      </div>
+      <div class="header-actions">
+        <label class="file-upload">
+          <span>Load Config</span>
+          <input type="file" id="configFile" accept="application/json" />
+        </label>
+        <button id="loadSample" class="btn-primary">Load Sample Config</button>
+        <div class="config-info">
+          <span id="configVersion">Config v2.14.1</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tab-bar">
+    <button class="tab-button active" data-tab="architecture">Architecture Map</button>
+    <button class="tab-button" data-tab="entities">Entity Browser</button>
+    <button class="tab-button" data-tab="recipes">Snowflake Recipes</button>
+    <button class="tab-button" data-tab="mappings">SF Mappings</button>
+    <button class="tab-button" data-tab="registry">Integration Registry</button>
+    <button class="tab-button" data-tab="lineage">Lineage Explorer</button>
+  </nav>
+
+  <main class="tab-content">
+    <!-- Architecture Map Tab -->
+    <section id="architecture" class="tab-panel active">
+      <div class="panel-toolbar">
+        <h2>Architecture Map — Individual Entity</h2>
+        <p>Showing entity graph and integrations. Click any connection arrow to view details</p>
+        <div class="toolbar-actions">
+          <button id="exportSvg" class="btn-secondary">Export SVG</button>
+          <button id="reloadConfig" class="btn-primary">Reload Config</button>
+        </div>
+      </div>
+      <div class="metrics-bar">
+        <div class="metric-card">
+          <div class="metric-value" id="totalEntities">63</div>
+          <div class="metric-label">Total Entities</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="totalAttributes">247</div>
+          <div class="metric-label">Attributes Mapped</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="recipeCount">8</div>
+          <div class="metric-label">Snowflake Recipes</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="mappingCount">5</div>
+          <div class="metric-label">SF Mappings</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="relationshipCount">22</div>
+          <div class="metric-label">Relationships</div>
+        </div>
+      </div>
+      <div class="architecture-container">
+        <aside class="entity-sidebar">
+          <div class="sidebar-section">
+            <h3>ENTITY GROUPS</h3>
+            <div id="entityGroups"></div>
+          </div>
+          <div class="sidebar-section">
+            <h3>INTEGRATIONS</h3>
+            <div id="integrationSystems"></div>
+          </div>
+          <div class="sidebar-section">
+            <h3>CONFIG FILES</h3>
+            <div id="configFiles"></div>
+          </div>
+        </aside>
+        <div id="architectureDiagram" class="diagram-card">Loading architecture...</div>
+      </div>
+    </section>
+
+    <!-- Entity Browser Tab -->
+    <section id="entities" class="tab-panel entity-browser-panel">
+      <div class="panel-toolbar">
+        <h2>Entity Browser</h2>
+        <p>Browse and manage all Reltio entities. Click any entity to view its attributes and metadata.</p>
+      </div>
+      
+      <div class="entity-browser-layout">
+        <!-- Left side: Entity list -->
+        <div class="entity-list-container">
+          <div class="filters-bar">
+            <input type="search" id="entitySearch" placeholder="Search entities..." class="filter-input" />
+            <select id="filterGroups" class="filter-select">
+              <option value="">All Groups</option>
+            </select>
+            <button id="filterHasIntegrations" class="filter-button">Has Integrations</button>
+            <button id="filterHasSurvivorship" class="filter-button">Has Survivorship</button>
+          </div>
+          
+          <div id="entityCount" class="result-count">Loading entities...</div>
+          
+          <div class="table-card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Entity Name</th>
+                  <th style="width: 80px;">Group</th>
+                  <th style="width: 80px; text-align: center;">Attributes</th>
+                  <th style="width: 80px; text-align: center;">Relationships</th>
+                  <th style="width: 110px; text-align: center;">Survivorship</th>
+                  <th style="width: 80px; text-align: center;">Type</th>
+                </tr>
+              </thead>
+              <tbody id="entityTable">
+                <tr><td colspan="6" style="padding: 20px; text-align: center; color: #94a3b8;">Loading entities...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- Right side: Entity detail -->
+        <div id="entityDetail" class="entity-detail-container">
+          <div id="entityDetailContent" class="entity-detail-content">
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #64748b;">
+              <p>Select an entity to view details</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Snowflake Recipes Tab -->
+    <section id="recipes" class="tab-panel">
+      <div class="panel-toolbar">
+        <h2>Snowflake Recipes</h2>
+        <p>Reltio recipes and transformation rules for Snowflake integration</p>
+        <div class="toolbar-actions">
+          <button id="exportRecipes" class="btn-secondary">View Raw JSON</button>
+          <button id="openRecipeLineage" class="btn-secondary">Open in Lineage</button>
+        </div>
+      </div>
+      <aside class="recipes-sidebar">
+        <h3>Snowflake Recipes (8)</h3>
+        <div id="recipeList"></div>
+      </aside>
+      <div id="recipeDetail" class="recipe-detail"></div>
+    </section>
+
+    <!-- SF Mappings Tab -->
+    <section id="mappings" class="tab-panel">
+      <div class="panel-toolbar">
+        <h2>Salesforce Mappings</h2>
+        <p>Source: sf-mappings.yaml - 12 active field mappings</p>
+        <div class="toolbar-actions">
+          <button id="exportMappings" class="btn-secondary">View Raw YAML</button>
+          <button id="openMappingLineage" class="btn-secondary">Open in Lineage</button>
+        </div>
+      </div>
+      <aside class="mappings-sidebar">
+        <h3>Salesforce Mappings (5)</h3>
+        <div id="mappingList"></div>
+      </aside>
+      <div id="mappingDetail" class="mapping-detail"></div>
+    </section>
+
+    <!-- Integration Registry Tab -->
+    <section id="registry" class="tab-panel">
+      <div class="panel-toolbar">
+        <h2>Integration Registry</h2>
+        <p>All active integrations parsed from snowflake-recipes.json and sf-mappings.yaml</p>
+        <div class="toolbar-actions">
+          <button id="exportRegistry" class="btn-secondary">Export CSV</button>
+          <button id="viewInLineage" class="btn-secondary">View in Lineage</button>
+        </div>
+      </div>
+      <div class="registry-metrics">
+        <div class="registry-metric">
+          <div class="metric-num">8</div>
+          <div class="metric-label">Snowflake Recipes</div>
+        </div>
+        <div class="registry-metric">
+          <div class="metric-num">5</div>
+          <div class="metric-label">Salesforce Mappings</div>
+        </div>
+        <div class="registry-metric">
+          <div class="metric-num">3</div>
+          <div class="metric-label">Other Integrations</div>
+        </div>
+        <div class="registry-metric">
+          <div class="metric-num">16</div>
+          <div class="metric-label">Total Active</div>
+        </div>
+        <div class="registry-metric">
+          <div class="metric-num">0</div>
+          <div class="metric-label">Config Errors</div>
+        </div>
+      </div>
+      <div class="registry-filters">
+        <select id="systemFilter" class="filter-select"><option value="">All Systems</option></select>
+        <select id="directionFilter" class="filter-select">
+          <option value="">All Directions</option>
+          <option value="Inbound">Inbound</option>
+          <option value="Outbound">Outbound</option>
+          <option value="Bidirectional">Bidirectional</option>
+        </select>
+        <button class="filter-button">Active Only</button>
+        <button class="filter-button">Full Load</button>
+        <button class="filter-button">Delta</button>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Integration Name</th>
+              <th>System</th>
+              <th>Direction</th>
+              <th>Source Entity</th>
+              <th>Target</th>
+              <th>Frequency</th>
+              <th>Fields</th>
+            </tr>
+          </thead>
+          <tbody id="integrationTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Lineage Explorer Tab -->
+    <section id="lineage" class="tab-panel">
+      <div class="panel-toolbar">
+        <h2>Lineage Explorer</h2>
+        <p>Trace any attribute or entity from MDM source to all downstream destinations</p>
+        <div class="toolbar-actions">
+          <button id="exportLineage" class="btn-secondary">Export Lineage</button>
+          <button id="viewImpactReport" class="btn-secondary">View Impact Report</button>
+        </div>
+      </div>
+      <div class="lineage-controls">
+        <div class="control-group">
+          <label>Trace from:</label>
+          <select id="lineageEntity" class="filter-select"><option>Individual</option></select>
+          <select id="lineageAttribute" class="filter-select"><option>firstName</option></select>
+        </div>
+        <div class="control-group">
+          <label>Show:</label>
+          <button class="filter-button active">Show Snowflake</button>
+          <button class="filter-button active">Show Salesforce</button>
+          <button class="filter-button">Show Transformations</button>
+          <button class="filter-button">Collapsed View</button>
+        </div>
+      </div>
+      <div id="lineageDiagram" class="diagram-card">Loading lineage...</div>
+      <div class="lineage-details">
+        <h3>Lineage Hops (6 Total)</h3>
+        <ol id="lineageHops"></ol>
+      </div>
+      <div id="impactSummary" class="impact-card"></div>
+    </section>
+  </main>
+
+  <div id="notification" class="notification hidden"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

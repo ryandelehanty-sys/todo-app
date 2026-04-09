@@ -1,0 +1,481 @@
+{
+  "uri": "configuration",
+  "description": "B2B Velocity Pack - Reltio MDM Configuration",
+  "schemaVersion": "vp_b2b.4.4.0",
+  "label": "B2B Velocity Pack v4.4.0",
+  "createdTime": 1754067536958,
+  "updatedTime": 1772122834460,
+  "sources": [
+    {
+      "uri": "configuration/sources/ServiceNow",
+      "label": "ServiceNow",
+      "abbreviation": "SN"
+    },
+    {
+      "uri": "configuration/sources/Salesforce",
+      "label": "Salesforce",
+      "abbreviation": "SFDC"
+    },
+    {
+      "uri": "configuration/sources/ReltioCleanser",
+      "label": "Reltio Data Cleanser",
+      "abbreviation": "RDC"
+    },
+    {
+      "uri": "configuration/sources/DnB",
+      "label": "Dun & Bradstreet",
+      "abbreviation": "D&B"
+    },
+    {
+      "uri": "configuration/sources/SAP",
+      "label": "SAP",
+      "abbreviation": "SAP"
+    },
+    {
+      "uri": "configuration/sources/ERP",
+      "label": "ERP System",
+      "abbreviation": "ERP"
+    },
+    {
+      "uri": "configuration/sources/ZoomInfo",
+      "label": "ZoomInfo",
+      "abbreviation": "ZI"
+    },
+    {
+      "uri": "configuration/sources/LinkedIn",
+      "label": "LinkedIn",
+      "abbreviation": "LNKD"
+    }
+  ],
+  "entityTypes": [
+    {
+      "uri": "configuration/entityTypes/Individual",
+      "label": "Individual",
+      "description": "Contact & personal info, along with all available details for current or prospective individual clients",
+      "typeColor": "#000066",
+      "typeIcon": "images/entity_icons/individual.svg",
+      "abstract": false,
+      "attributes": [
+        {
+          "uri": "configuration/entityTypes/Individual/attributes/reltioCentityId",
+          "label": "Reltio Entity ID",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Individual/attributes/FirstName",
+          "label": "First Name",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Individual/attributes/LastName",
+          "label": "Last Name",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Individual/attributes/DateOfBirth",
+          "label": "Date of Birth",
+          "type": "date",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Individual/attributes/Gender",
+          "label": "Gender",
+          "type": "enum",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Individual/attributes/NationalId",
+          "label": "National ID",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Individual/attributes/Email",
+          "label": "Email",
+          "type": "array",
+          "multiValue": true,
+          "attributes": [
+            {
+              "uri": "configuration/entityTypes/Individual/attributes/Email/address",
+              "label": "Email Address",
+              "type": "string"
+            },
+            {
+              "uri": "configuration/entityTypes/Individual/attributes/Email/type",
+              "label": "Email Type",
+              "type": "enum"
+            },
+            {
+              "uri": "configuration/entityTypes/Individual/attributes/Email/validationStatus",
+              "label": "Validation Status",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "uri": "configuration/entityTypes/Individual/attributes/Phone",
+          "label": "Phone",
+          "type": "array",
+          "multiValue": true,
+          "attributes": [
+            {
+              "uri": "configuration/entityTypes/Individual/attributes/Phone/number",
+              "label": "Phone Number",
+              "type": "string"
+            },
+            {
+              "uri": "configuration/entityTypes/Individual/attributes/Phone/type",
+              "label": "Phone Type",
+              "type": "enum"
+            }
+          ]
+        }
+      ],
+      "survivorshipGroups": [
+        {
+          "uri": "configuration/entityTypes/Individual/survivorshipGroups/FirstName",
+          "label": "First Name Survivorship"
+        },
+        {
+          "uri": "configuration/entityTypes/Individual/survivorshipGroups/LastName",
+          "label": "Last Name Survivorship"
+        }
+      ],
+      "matchGroups": [
+        {
+          "uri": "configuration/entityTypes/Individual/matchGroups/ExactNameMatch",
+          "label": "Exact Name Match"
+        },
+        {
+          "uri": "configuration/entityTypes/Individual/matchGroups/NIDMatch",
+          "label": "National ID Match"
+        }
+      ]
+    },
+    {
+      "uri": "configuration/entityTypes/Organization",
+      "label": "Organization",
+      "description": "Organization master data such as company profiles, financials, and corporate structure",
+      "typeColor": "#0000CC",
+      "typeIcon": "images/entity_icons/organization.svg",
+      "abstract": false,
+      "attributes": [
+        {
+          "uri": "configuration/entityTypes/Organization/attributes/reltioCentityId",
+          "label": "Reltio Entity ID",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Organization/attributes/Name",
+          "label": "Organization Name",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Organization/attributes/LegalName",
+          "label": "Legal Name",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Organization/attributes/OrganizationType",
+          "label": "Organization Type",
+          "type": "enum",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Organization/attributes/Industry",
+          "label": "Industry",
+          "type": "enum",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Organization/attributes/DUNSNumber",
+          "label": "DUNS Number",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Organization/attributes/AnnualRevenue",
+          "label": "Annual Revenue",
+          "type": "number",
+          "multiValue": false
+        }
+      ],
+      "survivorshipGroups": [
+        {
+          "uri": "configuration/entityTypes/Organization/survivorshipGroups/NameGroup",
+          "label": "Organization Name Survivorship"
+        }
+      ],
+      "matchGroups": [
+        {
+          "uri": "configuration/entityTypes/Organization/matchGroups/NameMatch",
+          "label": "Name Match"
+        },
+        {
+          "uri": "configuration/entityTypes/Organization/matchGroups/DunsMatch",
+          "label": "DUNS Number Match"
+        }
+      ]
+    },
+    {
+      "uri": "configuration/entityTypes/Location",
+      "label": "Location",
+      "description": "Geographic address and location data with geocoding attributes",
+      "typeColor": "#00FFFF",
+      "typeIcon": "images/entity_icons/area2.svg",
+      "abstract": false,
+      "attributes": [
+        {
+          "uri": "configuration/entityTypes/Location/attributes/reltioCentityId",
+          "label": "Reltio Entity ID",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Location/attributes/AddressLine1",
+          "label": "Address Line 1",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Location/attributes/AddressLine2",
+          "label": "Address Line 2",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Location/attributes/City",
+          "label": "City",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Location/attributes/StateProvince",
+          "label": "State/Province",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Location/attributes/PostalCode",
+          "label": "Postal Code",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Location/attributes/Country",
+          "label": "Country",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Location/attributes/VerificationStatus",
+          "label": "Verification Status",
+          "type": "enum",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Location/attributes/Latitude",
+          "label": "Latitude",
+          "type": "number",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Location/attributes/Longitude",
+          "label": "Longitude",
+          "type": "number",
+          "multiValue": false
+        }
+      ],
+      "survivorshipGroups": [
+        {
+          "uri": "configuration/entityTypes/Location/survivorshipGroups/AddressGroup",
+          "label": "Address Survivorship"
+        }
+      ]
+    },
+    {
+      "uri": "configuration/entityTypes/Product",
+      "label": "Product",
+      "description": "Product master data and catalog information",
+      "typeColor": "#3C96B7",
+      "typeIcon": "images/entity_icons/product2.svg",
+      "abstract": false,
+      "attributes": [
+        {
+          "uri": "configuration/entityTypes/Product/attributes/reltioCentityId",
+          "label": "Reltio Entity ID",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Product/attributes/ProductName",
+          "label": "Product Name",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Product/attributes/SKU",
+          "label": "SKU",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Product/attributes/Category",
+          "label": "Product Category",
+          "type": "enum",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Product/attributes/Description",
+          "label": "Description",
+          "type": "string",
+          "multiValue": false
+        }
+      ],
+      "matchGroups": [
+        {
+          "uri": "configuration/entityTypes/Product/matchGroups/SkuMatch",
+          "label": "SKU Match"
+        }
+      ]
+    },
+    {
+      "uri": "configuration/entityTypes/Supplier",
+      "label": "Supplier",
+      "description": "Supplier and vendor master data",
+      "typeColor": "#FF9900",
+      "abstract": true,
+      "attributes": [
+        {
+          "uri": "configuration/entityTypes/Supplier/attributes/SupplierName",
+          "label": "Supplier Name",
+          "type": "string",
+          "multiValue": false
+        },
+        {
+          "uri": "configuration/entityTypes/Supplier/attributes/VendorCode",
+          "label": "Vendor Code",
+          "type": "string",
+          "multiValue": false
+        }
+      ]
+    }
+  ],
+  "relationTypes": [
+    {
+      "uri": "configuration/relationTypes/IndividualHasAddress",
+      "label": "Individual Has Address",
+      "description": "Relationship between an individual and their address",
+      "startObject": {
+        "objectTypeURI": "configuration/entityTypes/Individual"
+      },
+      "endObject": {
+        "objectTypeURI": "configuration/entityTypes/Location"
+      },
+      "implicit": false,
+      "direction": "directed"
+    },
+    {
+      "uri": "configuration/relationTypes/IndividualWorksFor",
+      "label": "Individual Works For",
+      "description": "Employment relationship between individual and organization",
+      "startObject": {
+        "objectTypeURI": "configuration/entityTypes/Individual"
+      },
+      "endObject": {
+        "objectTypeURI": "configuration/entityTypes/Organization"
+      },
+      "implicit": false,
+      "direction": "directed"
+    },
+    {
+      "uri": "configuration/relationTypes/OrganizationHasAddress",
+      "label": "Organization Has Address",
+      "description": "Relationship between organization and address",
+      "startObject": {
+        "objectTypeURI": "configuration/entityTypes/Organization"
+      },
+      "endObject": {
+        "objectTypeURI": "configuration/entityTypes/Location"
+      },
+      "implicit": false,
+      "direction": "directed"
+    },
+    {
+      "uri": "configuration/relationTypes/OrganizationSupplies",
+      "label": "Organization Supplies Product",
+      "description": "Relationship between supplier and product",
+      "startObject": {
+        "objectTypeURI": "configuration/entityTypes/Supplier"
+      },
+      "endObject": {
+        "objectTypeURI": "configuration/entityTypes/Product"
+      },
+      "implicit": false,
+      "direction": "directed"
+    }
+  ],
+  "graphTypes": [
+    {
+      "uri": "configuration/graphTypes/OrganizationHierarchy",
+      "label": "Organization Hierarchy",
+      "type": "logical",
+      "layout": "hierarchy",
+      "graphStructure": "hierarchy"
+    },
+    {
+      "uri": "configuration/graphTypes/CustomerNetwork",
+      "label": "Customer Network",
+      "type": "logical",
+      "layout": "network",
+      "graphStructure": "network"
+    },
+    {
+      "uri": "configuration/graphTypes/SupplyChain",
+      "label": "Supply Chain Network",
+      "type": "logical",
+      "layout": "hierarchical",
+      "graphStructure": "dag"
+    }
+  ],
+  "survivorshipStrategies": [
+    {
+      "uri": "configuration/survivorshipStrategies/CleanserWins",
+      "label": "Reltio Cleanser Wins"
+    },
+    {
+      "uri": "configuration/survivorshipStrategies/Frequency",
+      "label": "Frequency"
+    },
+    {
+      "uri": "configuration/survivorshipStrategies/Aggregation",
+      "label": "Aggregation"
+    },
+    {
+      "uri": "configuration/survivorshipStrategies/SourcePriority",
+      "label": "Source Priority"
+    },
+    {
+      "uri": "configuration/survivorshipStrategies/Recency",
+      "label": "Most Recent"
+    },
+    {
+      "uri": "configuration/survivorshipStrategies/OldestValue",
+      "label": "Oldest Value"
+    },
+    {
+      "uri": "configuration/survivorshipStrategies/MinValue",
+      "label": "Minimum Value"
+    },
+    {
+      "uri": "configuration/survivorshipStrategies/MaxValue",
+      "label": "Maximum Value"
+    }
+  ]
+}

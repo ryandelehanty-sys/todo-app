@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mermaid Diagram Test</title>
+  <style>
+    body {
+      background: #0f172a;
+      color: #e0e7ff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .test-section {
+      background: #1a2540;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      border: 1px solid #38bdf8;
+    }
+    h2 {
+      color: #38bdf8;
+      margin-top: 0;
+    }
+    .diagram-container {
+      background: #0f172a;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      border: 1px solid #38bdf8;
+      min-height: 300px;
+    }
+    pre {
+      background: #0f172a;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+      border: 1px solid #38bdf8;
+      font-size: 12px;
+    }
+    .error {
+      color: #ff6b6b;
+      background: #2a1a1a;
+      padding: 15px;
+      border-radius: 4px;
+      border-left: 4px solid #ff6b6b;
+      margin: 10px 0;
+    }
+    .success {
+      color: #51cf66;
+      background: #1a2a1a;
+      padding: 15px;
+      border-radius: 4px;
+      border-left: 4px solid #51cf66;
+      margin: 10px 0;
+    }
+    button {
+      background: #38bdf8;
+      color: #0f172a;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 10px 5px 10px 0;
+    }
+    button:hover {
+      background: #60a5fa;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 Mermaid Diagram Syntax Test</h1>
+    
+    <div class="test-section">
+      <h2>Test 1: Simple Diagram (No Special Characters)</h2>
+      <button onclick="testSimpleDiagram()">Run Test 1</button>
+      <div id="test1-result"></div>
+      <div id="diagram1" class="diagram-container"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Test 2: With Ampersands (Original Issue)</h2>
+      <button onclick="testAmpersandDiagram()">Run Test 2</button>
+      <div id="test2-result"></div>
+      <div id="diagram2" class="diagram-container"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Test 3: With Sanitized Ampersands</h2>
+      <button onclick="testSanitizedDiagram()">Run Test 3</button>
+      <div id="test3-result"></div>
+      <div id="diagram3" class="diagram-container"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Test 4: Load Sample Config & Test Actual Data</h2>
+      <button onclick="testRealData()">Run Test 4</button>
+      <div id="test4-result"></div>
+      <div id="diagram4" class="diagram-container"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Test 5: Console Logs & Debug Info</h2>
+      <button onclick="showConsoleLogs()">Show Console Logs</button>
+      <pre id="console-logs"></pre>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    // Capture console logs
+    const logs = [];
+    const originalLog = console.log;
+    const originalError = console.error;
+    const originalWarn = console.warn;
+
+    console.log = function(...args) {
+      logs.push({ type: 'log', message: args.join(' ') });
+      originalLog.apply(console, args);
+    };
+    console.error = function(...args) {
+      logs.push({ type: 'error', message: args.join(' ') });
+      originalError.apply(console, args);
+    };
+    console.warn = function(...args) {
+      logs.push({ type: 'warn', message: args.join(' ') });
+      originalWarn.apply(console, args);
+    };
+
+    // Initialize Mermaid
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'dark',
+      logLevel: 'debug'
+    });
+
+    // Sanitize function
+    const sanitize = (str) => {
+      return str
+        .replace(/&/g, ' and ')
+        .replace(/[<>]/g, '')
+        .replace(/"/g, "'")
+        .trim();
+    };
+
+    // Test 1: Simple diagram
+    function testSimpleDiagram() {
+      const def = `flowchart LR
+  subgraph entities["Entity Types"]
+    E0["Entity One"]
+    E1["Entity Two"]
+  end
+  
+  subgraph sources_group["Data Sources"]
+    S0["Source One"]
+  end
+  
+  S0 --> E0
+  S0 --> E1
+  
+  classDef entity fill:#1e40af,stroke:#38bdf8,color:#fff,stroke-width:2px
+  classDef source fill:#1e3a8a,stroke:#60a5fa,color:#fff
+  class E0,E1 entity
+  class S0 source`;
+
+      renderTest('diagram1', 'test1-result', def, 'Simple diagram');
+    }
+
+    // Test 2: With ampersands (raw)
+    function testAmpersandDiagram() {
+      const def = `flowchart LR
+  subgraph entities["Entity Types"]
+    E0["Dun & Bradstreet"]
+    E1["D&B Enrichment"]
+  end
+  
+  subgraph sources_group["Data Sources"]
+    S0["Source & System"]
+  end
+  
+  S0 --> E0
+  S0 --> E1
+  
+  classDef entity fill:#1e40af,stroke:#38bdf8,color:#fff,stroke-width:2px
+  classDef source fill:#1e3a8a,stroke:#60a5fa,color:#fff
+  class E0,E1 entity
+  class S0 source`;
+
+      renderTest('diagram2', 'test2-result', def, 'Ampersand NOT sanitized');
+    }
+
+    // Test 3: With sanitized ampersands
+    function testSanitizedDiagram() {
+      const labels = [
+        'Dun & Bradstreet',
+        'D&B Enrichment',
+        'Source & System'
+      ];
+      const sanitized = labels.map(l => sanitize(l));
+
+      const def = `flowchart LR
+  subgraph entities["Entity Types"]
+    E0["${sanitized[0]}"]
+    E1["${sanitized[1]}"]
+  end
+  
+  subgraph sources_group["Data Sources"]
+    S0["${sanitized[2]}"]
+  end
+  
+  S0 --> E0
+  S0 --> E1
+  
+  classDef entity fill:#1e40af,stroke:#38bdf8,color:#fff,stroke-width:2px
+  classDef source fill:#1e3a8a,stroke:#60a5fa,color:#fff
+  class E0,E1 entity
+  class S0 source`;
+
+      renderTest('diagram3', 'test3-result', def, 'Ampersand SANITIZED');
+    }
+
+    // Test 4: Load real data
+    async function testRealData() {
+      try {
+        const response = await fetch('sample-config.json');
+        const config = await response.json();
+        
+        const entities = (config.entityTypes || []).slice(0, 5);
+        const sources = (config.sources || []).slice(0, 6);
+
+        let def = 'flowchart LR\n';
+        def += '  subgraph entities["Entity Types"]\n';
+        entities.forEach((entity, idx) => {
+          const safeLabel = sanitize(entity.label);
+          def += `    E${idx}["${safeLabel}"]\n`;
+        });
+        def += '  end\n\n';
+
+        def += '  subgraph sources_group["Data Sources"]\n';
+        sources.forEach((source, idx) => {
+          const safeLabel = sanitize(source.label);
+          def += `    S${idx}["${safeLabel}"]\n`;
+        });
+        def += '  end\n\n';
+
+        sources.forEach((_, sidx) => {
+          for (let i = 0; i < entities.length; i++) {
+            if (sources.length === 1 || i % Math.max(2, Math.ceil(entities.length / sources.length)) === sidx % entities.length) {
+              def += `  S${sidx} --> E${i}\n`;
+            }
+          }
+        });
+
+        def += '  classDef entity fill:#1e40af,stroke:#38bdf8,color:#fff,stroke-width:2px\n';
+        def += '  classDef source fill:#1e3a8a,stroke:#60a5fa,color:#fff\n';
+        const entityClasses = entities.map((_, i) => `E${i}`).join(',');
+        const sourceClasses = sources.map((_, i) => `S${i}`).join(',');
+        if (entityClasses) def += `  class ${entityClasses} entity\n`;
+        if (sourceClasses) def += `  class ${sourceClasses} source\n`;
+
+        renderTest('diagram4', 'test4-result', def, 'Real sample config data');
+      } catch (error) {
+        document.getElementById('test4-result').innerHTML = 
+          `<div class="error">Failed to load sample config: ${error.message}</div>`;
+      }
+    }
+
+    // Render test
+    function renderTest(diagramId, resultId, def, testName) {
+      console.log(`\n=== TEST: ${testName} ===`);
+      console.log('Mermaid Definition:');
+      console.log(def);
+      console.log('='.repeat(50));
+
+      const container = document.getElementById(diagramId);
+      const resultContainer = document.getElementById(resultId);
+      
+      container.innerHTML = '';
+      resultContainer.innerHTML = '';
+
+      // Show definition
+      resultContainer.innerHTML += `<pre>${def.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`;
+
+      // Create mermaid diagram
+      const mermaidDiv = document.createElement('div');
+      mermaidDiv.className = 'mermaid';
+      mermaidDiv.textContent = def;
+      container.appendChild(mermaidDiv);
+
+      // Render
+      try {
+        if (typeof mermaid.run === 'function') {
+          mermaid.run();
+          console.log('✓ Mermaid.run() called');
+          resultContainer.innerHTML += '<div class="success">✓ Diagram rendered successfully</div>';
+        } else {
+          console.log('✗ mermaid.run not available, trying contentLoaded');
+          mermaid.contentLoaded();
+          resultContainer.innerHTML += '<div class="success">✓ Diagram rendered with contentLoaded</div>';
+        }
+      } catch (error) {
+        console.error('✗ Render error:', error);
+        resultContainer.innerHTML += `<div class="error"><strong>Error:</strong> ${error.message}</div>`;
+      }
+    }
+
+    // Show console logs
+    function showConsoleLogs() {
+      const logsDiv = document.getElementById('console-logs');
+      logsDiv.textContent = logs
+        .map(l => `[${l.type.toUpperCase()}] ${l.message}`)
+        .join('\n');
+    }
+
+    // Auto-run first test
+    window.addEventListener('load', () => {
+      console.log('Page loaded, Mermaid available:', typeof mermaid !== 'undefined');
+      testSimpleDiagram();
+    });
+  </script>
+</body>
+</html>
