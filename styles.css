@@ -209,6 +209,9 @@ body {
   border-bottom: 1px solid var(--border);
   background: rgba(15, 23, 42, 0.5);
   overflow-x: auto;
+  position: relative;
+  z-index: 10050;
+  pointer-events: auto;
 }
 
 .tab-button {
@@ -221,6 +224,9 @@ body {
   white-space: nowrap;
   transition: all 0.2s;
   font-weight: 500;
+  pointer-events: auto;
+  position: relative;
+  z-index: 10051;
 }
 
 .tab-button:hover {

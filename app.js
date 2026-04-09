@@ -120,21 +120,7 @@ class ReltioConfigParser {
 let configParser = null;
 let architectureFilter = null; // Track selected filter: 'group', 'source', or null
 
-// Tab management
-const tabs = document.querySelectorAll('.tab-button');
-const panels = document.querySelectorAll('.tab-panel');
-
-tabs.forEach((button) => {
-  button.addEventListener('click', () => {
-    tabs.forEach((tab) => tab.classList.remove('active'));
-    panels.forEach((panel) => panel.classList.remove('active'));
-    button.classList.add('active');
-    const tabId = button.dataset.tab;
-    document.getElementById(tabId).classList.add('active');
-    renderTab(tabId);
-  });
-});
-
+// Tab management (consolidated)
 function renderTab(tabId) {
   if (!configParser) return;
   if (tabId === 'architecture') renderArchitecture();
@@ -144,6 +130,72 @@ function renderTab(tabId) {
   else if (tabId === 'registry') renderRegistry();
   else if (tabId === 'lineage') renderLineage();
 }
+
+function switchTab(tabId) {
+  try {
+    console.log('switchTab called for:', tabId);
+    const buttons = document.querySelectorAll('.tab-button');
+    const panels = document.querySelectorAll('.tab-panel');
+    buttons.forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+    panels.forEach(p => p.classList.toggle('active', p.id === tabId));
+
+    const panel = document.getElementById(tabId);
+    if (panel) panel.scrollTop = 0;
+
+    renderTab(tabId);
+  } catch (err) {
+    console.error('switchTab error:', err);
+  }
+}
+
+// Expose for inline handlers
+window.switchTab = switchTab;
+
+// Diagnostic click tracer (capture phase) - stores last elements stack at the click point
+window.lastClickTrace = null;
+document.addEventListener('click', (e) => {
+  try {
+    const tab = e.target.closest && e.target.closest('.tab-button');
+    if (tab && tab.dataset && tab.dataset.tab) {
+      console.log('Captured tab click (delegation):', tab.dataset.tab);
+      // Call switchTab as deterministic fallback
+      switchTab(tab.dataset.tab);
+      return;
+    }
+
+    // Save elements under the pointer for debugging overlays
+    const elems = document.elementsFromPoint(e.clientX, e.clientY).map(el => {
+      const style = window.getComputedStyle(el);
+      return {
+        tag: el.tagName,
+        id: el.id || null,
+        classes: el.className || null,
+        zIndex: style.zIndex,
+        pointerEvents: style.pointerEvents
+      };
+    });
+    window.lastClickTrace = {
+      time: Date.now(),
+      x: e.clientX,
+      y: e.clientY,
+      targetTag: e.target.tagName,
+      elementsAtPoint: elems
+    };
+    console.log('click trace saved:', window.lastClickTrace);
+  } catch (err) {
+    console.error('click tracer error:', err);
+  }
+}, true);
+
+// Keyboard shortcuts: Alt+1..6 navigate tabs (handy for testing)
+document.addEventListener('keydown', (e) => {
+  if (!e.altKey) return;
+  const map = { '1': 'architecture', '2': 'entities', '3': 'recipes', '4': 'mappings', '5': 'registry', '6': 'lineage' };
+  if (map[e.key]) {
+    e.preventDefault();
+    switchTab(map[e.key]);
+  }
+});
 
 // Notification system
 function showNotification(message) {
