@@ -158,7 +158,9 @@ document.addEventListener('click', (e) => {
     const tab = e.target.closest && e.target.closest('.tab-button');
     if (tab && tab.dataset && tab.dataset.tab) {
       console.log('Captured tab click (delegation):', tab.dataset.tab);
-      // Call switchTab as deterministic fallback
+      // Prevent other handlers from interfering and call centralized switchTab
+      e.preventDefault();
+      e.stopPropagation();
       switchTab(tab.dataset.tab);
       return;
     }
@@ -252,6 +254,10 @@ function renderArchitecture() {
 }
 
 function setupArchitectureFilterHandlers() {
+  // Only attach handlers once to avoid duplicate listeners on repeated renders
+  if (window._architectureFiltersInitialized) return;
+  window._architectureFiltersInitialized = true;
+
   // Entity Groups - make clickable
   const entityGroupsContainer = document.getElementById('entityGroups');
   if (entityGroupsContainer) {
@@ -998,12 +1004,7 @@ const initializeButtons = () => {
   const openRecipeLineageBtn = document.getElementById('openRecipeLineage');
   if (openRecipeLineageBtn) {
     openRecipeLineageBtn.addEventListener('click', () => {
-      const tabs = document.querySelectorAll('.tab-button');
-      tabs.forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      document.querySelector('[data-tab="lineage"]').classList.add('active');
-      document.getElementById('lineage').classList.add('active');
-      renderTab('lineage');
+      switchTab('lineage');
     });
   }
 
@@ -1022,12 +1023,7 @@ const initializeButtons = () => {
   const openMappingLineageBtn = document.getElementById('openMappingLineage');
   if (openMappingLineageBtn) {
     openMappingLineageBtn.addEventListener('click', () => {
-      const tabs = document.querySelectorAll('.tab-button');
-      tabs.forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      document.querySelector('[data-tab="lineage"]').classList.add('active');
-      document.getElementById('lineage').classList.add('active');
-      renderTab('lineage');
+      switchTab('lineage');
     });
   }
 
@@ -1048,12 +1044,7 @@ const initializeButtons = () => {
   const viewInLineageBtn = document.getElementById('viewInLineage');
   if (viewInLineageBtn) {
     viewInLineageBtn.addEventListener('click', () => {
-      const tabs = document.querySelectorAll('.tab-button');
-      tabs.forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      document.querySelector('[data-tab="lineage"]').classList.add('active');
-      document.getElementById('lineage').classList.add('active');
-      renderTab('lineage');
+      switchTab('lineage');
     });
   }
 
@@ -1310,21 +1301,14 @@ function applyArchitectureFilter(type, value) {
 }
 
 function navigateToEntity(entityIndex) {
-  // Navigate to entity browser tab and show entity detail
+  // Navigate to entity browser tab and show entity detail via centralized switchTab
   if (!configParser) return;
-  
-  const tabs = document.querySelectorAll('.tab-button');
-  const panels = document.querySelectorAll('.tab-panel');
-  
-  tabs.forEach(tab => tab.classList.remove('active'));
-  panels.forEach(panel => panel.classList.remove('active'));
-  
-  const entitiesTab = document.querySelector('[data-tab="entities"]');
-  if (entitiesTab) {
-    entitiesTab.classList.add('active');
-    document.getElementById('entities').classList.add('active');
-    renderTab('entities');
-    showEntityDetail(entityIndex);
+  try {
+    switchTab('entities');
+    // Defer to ensure entity browser renders before showing details
+    setTimeout(() => showEntityDetail(entityIndex), 0);
+  } catch (err) {
+    console.error('navigateToEntity error:', err);
   }
 }
 
