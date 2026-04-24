@@ -23,7 +23,7 @@
         <label class="file-upload">
           <span>Load Config</span>
           <input type="file" id="configFile" accept="application/json" />
-        </label>
+        </label><i class="info-icon" data-tip="Upload the L3 Data Modeler export JSON file. Export from Reltio: Configuration → Data Model → Download JSON.">i</i>
         <button id="loadSample" class="btn-primary">Load Sample Config</button>
         <div class="config-info">
           <span id="configVersion">Config v2.14.1</span>
@@ -35,8 +35,7 @@
   <nav class="tab-bar">
     <button class="tab-button active" data-tab="architecture">Architecture Map</button>
     <button class="tab-button" data-tab="entities">Entity Browser</button>
-    <button class="tab-button" data-tab="recipes">Snowflake Recipes</button>
-    <button class="tab-button" data-tab="mappings">SF Mappings</button>
+    <button class="tab-button" data-tab="recipes">Reltio Recipes</button>
     <button class="tab-button" data-tab="registry">Integration Registry</button>
     <button class="tab-button" data-tab="lineage">Lineage Explorer</button>
   </nav>
@@ -48,40 +47,42 @@
         <h2>Architecture Map — Individual Entity</h2>
         <p>Showing entity graph and integrations. Click any connection arrow to view details</p>
         <div class="toolbar-actions">
+          <button id="archModelViewBtn" class="btn-secondary" title="Toggle between Flow (source→entity) and Model (entity→entity relationship) views">Model View</button>
+          <button id="archCoverageMatrixBtn" class="btn-secondary" title="Show source×entity coverage matrix">Coverage Matrix</button>
           <button id="exportSvg" class="btn-secondary">Export SVG</button>
           <button id="reloadConfig" class="btn-primary">Reload Config</button>
         </div>
       </div>
       <div class="metrics-bar">
-        <div class="metric-card">
-          <div class="metric-value" id="totalEntities">63</div>
+        <div class="metric-card" id="metricCard-entities">
+          <div class="metric-value" id="totalEntities">0</div>
           <div class="metric-label">Total Entities</div>
         </div>
-        <div class="metric-card">
-          <div class="metric-value" id="totalAttributes">247</div>
-          <div class="metric-label">Attributes Mapped</div>
+        <div class="metric-card" id="metricCard-integration">
+          <div class="metric-value" id="totalAttributes">-</div>
+          <div class="metric-label">Integration Cov.</div>
         </div>
-        <div class="metric-card">
-          <div class="metric-value" id="recipeCount">8</div>
-          <div class="metric-label">Snowflake Recipes</div>
+        <div class="metric-card" id="metricCard-survivorship">
+          <div class="metric-value" id="recipeCount">-</div>
+          <div class="metric-label">Survivorship Cov.</div>
         </div>
-        <div class="metric-card">
-          <div class="metric-value" id="mappingCount">5</div>
-          <div class="metric-label">SF Mappings</div>
+        <div class="metric-card" id="metricCard-sources">
+          <div class="metric-value" id="connectedSystems">0</div>
+          <div class="metric-label">Active Sources</div>
         </div>
-        <div class="metric-card">
-          <div class="metric-value" id="relationshipCount">22</div>
-          <div class="metric-label">Relationships</div>
+        <div class="metric-card" id="metricCard-orphaned">
+          <div class="metric-value" id="orphanedEntities">-</div>
+          <div class="metric-label">Orphaned Entities</div>
         </div>
       </div>
       <div class="architecture-container">
         <aside class="entity-sidebar">
           <div class="sidebar-section">
-            <h3>ENTITY GROUPS</h3>
+            <h3>ENTITY GROUPS <button id="archInactiveGroupsToggle" class="arch-inactive-toggle" title="Show entity groups with no active recipe data">Show Inactive</button></h3>
             <div id="entityGroups"></div>
           </div>
           <div class="sidebar-section">
-            <h3>INTEGRATIONS</h3>
+            <h3>INTEGRATIONS <button id="archInactiveToggle" class="arch-inactive-toggle" title="Show sources with no active recipes">Show Inactive</button></h3>
             <div id="integrationSystems"></div>
           </div>
           <div class="sidebar-section">
@@ -89,7 +90,10 @@
             <div id="configFiles"></div>
           </div>
         </aside>
-        <div id="architectureDiagram" class="diagram-card">Loading architecture...</div>
+        <div class="arch-diagram-col">
+          <div id="archDiagramBanner" class="arch-banner" style="display:none;"></div>
+          <div id="architectureDiagram" class="diagram-card">Loading architecture...</div>
+        </div>
       </div>
     </section>
 
@@ -110,6 +114,11 @@
             </select>
             <button id="filterHasIntegrations" class="filter-button">Has Integrations</button>
             <button id="filterHasSurvivorship" class="filter-button">Has Survivorship</button>
+            <button id="filterIntegrationGaps" class="filter-button filter-button--gaps" title="Show only entities with integration coverage gaps">⚠ Gaps</button>
+            <button id="importDLMappingsBtn" class="filter-button" title="Import Reltio Dataloader API mappings JSON to show attribute-level sync status" style="margin-left:auto;border-color:rgba(56,189,248,0.3);color:#38bdf8;">⬆ DL Mappings</button><i class="info-icon" data-tip="Upload the response from the Reltio Dataloader API:\nGET /services/dataloader/api/_mapping\n\nThis shows which source fields map to which Reltio attributes for each entity.">i</i>
+            <input type="file" id="importDLMappingsInput" accept=".json" style="display:none;" />
+            <button id="importRDMBtn" class="filter-button" title="Import Reltio RDM (reference data) export JSON to show enum value translations" style="border-color:rgba(99,102,241,0.4);color:#818cf8;">⬆ Ref Data</button><i class="info-icon" data-tip="Upload the response from the Reltio Lookups API:\nGET /services/lookups/\n\nThis enables enum attribute value translations (e.g. Salesforce code → Reltio display value).">i</i>
+            <input type="file" id="importRDMInput" accept=".json" style="display:none;" />
           </div>
           
           <div id="entityCount" class="result-count">Loading entities...</div>
@@ -144,99 +153,51 @@
       </div>
     </section>
 
-    <!-- Snowflake Recipes Tab -->
+    <!-- Reltio Recipes Tab -->
     <section id="recipes" class="tab-panel">
       <div class="panel-toolbar">
-        <h2>Snowflake Recipes</h2>
-        <p>Reltio recipes and transformation rules for Snowflake integration</p>
+        <h2>Reltio Recipes</h2>
+        <p>Import, explore, and visualize Reltio recipe projects and flows.</p>
         <div class="toolbar-actions">
-          <button id="exportRecipes" class="btn-secondary">View Raw JSON</button>
-          <button id="openRecipeLineage" class="btn-secondary">Open in Lineage</button>
+          <input type="file" id="importRecipesFolder" webkitdirectory directory multiple style="display:none;" />
+          <button id="importRecipesBtn" class="btn-primary">Import Recipes Folder</button><i class="info-icon" data-tip="Upload the Recipe Lifecycle export. In Workato, go to Tools → Recipe Lifecycle Management → Export, then select the folder containing your recipe projects.">i</i>
         </div>
       </div>
-      <aside class="recipes-sidebar">
-        <h3>Snowflake Recipes (8)</h3>
-        <div id="recipeList"></div>
-      </aside>
-      <div id="recipeDetail" class="recipe-detail"></div>
-    </section>
-
-    <!-- SF Mappings Tab -->
-    <section id="mappings" class="tab-panel">
-      <div class="panel-toolbar">
-        <h2>Salesforce Mappings</h2>
-        <p>Source: sf-mappings.yaml - 12 active field mappings</p>
-        <div class="toolbar-actions">
-          <button id="exportMappings" class="btn-secondary">View Raw YAML</button>
-          <button id="openMappingLineage" class="btn-secondary">Open in Lineage</button>
+      <div class="recipes-flex-layout" id="recipeFlexLayout">
+        <div class="recipes-list-col">
+          <div id="recipesProjectsContainer">
+            <!-- Projects and recipes will be rendered here -->
+          </div>
+        </div>
+        <div class="recipes-visual-col">
+          <div id="recipeDiagramContainer"></div>
+        </div>
+        <div class="recipes-detail-col" id="recipeStepDetailPanel" style="display:none;">
+          <div class="rsd-inner" id="recipeStepDetailInner"></div>
         </div>
       </div>
-      <aside class="mappings-sidebar">
-        <h3>Salesforce Mappings (5)</h3>
-        <div id="mappingList"></div>
-      </aside>
-      <div id="mappingDetail" class="mapping-detail"></div>
     </section>
 
     <!-- Integration Registry Tab -->
     <section id="registry" class="tab-panel">
       <div class="panel-toolbar">
         <h2>Integration Registry</h2>
-        <p>All active integrations parsed from snowflake-recipes.json and sf-mappings.yaml</p>
+        <p>Connected systems discovered from Reltio recipes and configuration. Import recipes to populate full details.</p>
         <div class="toolbar-actions">
           <button id="exportRegistry" class="btn-secondary">Export CSV</button>
-          <button id="viewInLineage" class="btn-secondary">View in Lineage</button>
         </div>
       </div>
-      <div class="registry-metrics">
-        <div class="registry-metric">
-          <div class="metric-num">8</div>
-          <div class="metric-label">Snowflake Recipes</div>
-        </div>
-        <div class="registry-metric">
-          <div class="metric-num">5</div>
-          <div class="metric-label">Salesforce Mappings</div>
-        </div>
-        <div class="registry-metric">
-          <div class="metric-num">3</div>
-          <div class="metric-label">Other Integrations</div>
-        </div>
-        <div class="registry-metric">
-          <div class="metric-num">16</div>
-          <div class="metric-label">Total Active</div>
-        </div>
-        <div class="registry-metric">
-          <div class="metric-num">0</div>
-          <div class="metric-label">Config Errors</div>
-        </div>
+      <div id="registryMetricsBar" class="reg-metrics-bar"></div>
+      <div class="reg-filter-bar">
+        <button class="reg-dir-btn active" data-dir="">All</button>
+        <button class="reg-dir-btn" data-dir="Inbound">↓ Inbound</button>
+        <button class="reg-dir-btn" data-dir="Outbound">↑ Outbound</button>
+        <button class="reg-dir-btn" data-dir="Bidirectional">⇄ Bidirectional</button>
+        <input type="search" id="registrySearch" placeholder="Filter systems…" class="reg-search-input" />
       </div>
-      <div class="registry-filters">
-        <select id="systemFilter" class="filter-select"><option value="">All Systems</option></select>
-        <select id="directionFilter" class="filter-select">
-          <option value="">All Directions</option>
-          <option value="Inbound">Inbound</option>
-          <option value="Outbound">Outbound</option>
-          <option value="Bidirectional">Bidirectional</option>
-        </select>
-        <button class="filter-button">Active Only</button>
-        <button class="filter-button">Full Load</button>
-        <button class="filter-button">Delta</button>
-      </div>
-      <div class="table-card">
-        <table>
-          <thead>
-            <tr>
-              <th>Integration Name</th>
-              <th>System</th>
-              <th>Direction</th>
-              <th>Source Entity</th>
-              <th>Target</th>
-              <th>Frequency</th>
-              <th>Fields</th>
-            </tr>
-          </thead>
-          <tbody id="integrationTable"></tbody>
-        </table>
+      <div class="reg-body">
+        <div id="registrySystemCards" class="reg-cards-grid"></div>
+        <div id="registryDetailPanel" class="reg-detail-panel" style="display:none;"></div>
       </div>
     </section>
 
@@ -244,36 +205,60 @@
     <section id="lineage" class="tab-panel">
       <div class="panel-toolbar">
         <h2>Lineage Explorer</h2>
-        <p>Trace any attribute or entity from MDM source to all downstream destinations</p>
+        <p>Select source systems and trace every attribute from ingest through MDM to downstream exports</p>
         <div class="toolbar-actions">
-          <button id="exportLineage" class="btn-secondary">Export Lineage</button>
-          <button id="viewImpactReport" class="btn-secondary">View Impact Report</button>
+          <button id="exportLineage" class="btn-secondary">Export CSV</button>
+          <button id="viewImpactReport" class="btn-secondary">Summary</button>
         </div>
       </div>
-      <div class="lineage-controls">
-        <div class="control-group">
-          <label>Trace from:</label>
-          <select id="lineageEntity" class="filter-select"><option>Individual</option></select>
-          <select id="lineageAttribute" class="filter-select"><option>firstName</option></select>
+      <div class="lineage-layout">
+        <!-- Left sidebar: filters -->
+        <div class="lineage-sidebar">
+          <div class="lsb-section">
+            <div class="lsb-section-title">SOURCE SYSTEMS</div>
+            <div id="lineageSourcePills" class="lin-pills-list"></div>
+          </div>
+          <div class="lsb-section">
+            <div class="lsb-section-title">ENTITY TYPE</div>
+            <div id="lineageEntityPills" class="lin-entity-list"></div>
+          </div>
+          <div class="lsb-section" id="lineageSideSummary"></div>
         </div>
-        <div class="control-group">
-          <label>Show:</label>
-          <button class="filter-button active">Show Snowflake</button>
-          <button class="filter-button active">Show Salesforce</button>
-          <button class="filter-button">Show Transformations</button>
-          <button class="filter-button">Collapsed View</button>
+        <!-- Main attribute lineage map -->
+        <div class="lineage-main">
+          <div class="lineage-search-bar">
+            <input type="search" id="lineageSearch" placeholder="Filter attributes by name or type…" />
+            <span id="lineageRowCount" class="lin-row-count"></span>
+          </div>
+          <div class="lineage-col-header">
+            <div class="lch-inbound">INBOUND &nbsp;▶&nbsp; SOURCE FIELDS</div>
+            <div class="lch-mdm">MDM / RELTIO ATTRIBUTE</div>
+            <div class="lch-outbound">OUTBOUND &nbsp;▶&nbsp; EXPORT FIELDS</div>
+          </div>
+          <div id="lineageAttrRows"></div>
         </div>
       </div>
-      <div id="lineageDiagram" class="diagram-card">Loading lineage...</div>
-      <div class="lineage-details">
-        <h3>Lineage Hops (6 Total)</h3>
-        <ol id="lineageHops"></ol>
-      </div>
-      <div id="impactSummary" class="impact-card"></div>
+      <!-- Hidden legacy elements kept for button-handler compatibility -->
+      <div id="lineageHops" style="display:none;"></div>
+      <div id="impactSummary" style="display:none;"></div>
     </section>
   </main>
 
   <div id="notification" class="notification hidden"></div>
+
+  <!-- Coverage Matrix Modal -->
+  <div id="coverageMatrixModal" class="coverage-matrix-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Source Coverage Matrix">
+    <div class="coverage-matrix-dialog">
+      <div class="coverage-matrix-header">
+        <span class="coverage-matrix-title">Source × Entity Coverage Matrix</span>
+        <button id="closeCoverageMatrix" class="coverage-matrix-close" aria-label="Close">×</button>
+      </div>
+      <p class="coverage-matrix-subtitle">Green cells indicate a recipe mapping exists. Numbers show mapped field counts from DL data (if loaded).</p>
+      <div class="coverage-matrix-scroll">
+        <div id="coverageMatrixContent"></div>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <script type="module" src="app.js"></script>
